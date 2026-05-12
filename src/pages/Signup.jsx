@@ -8,6 +8,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [mode, setMode] = useState('candidate'); // 'candidate' or 'recruiter'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,16 +22,28 @@ const Signup = () => {
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
       });
       if (signupError) throw signupError;
 
-      if (authData.user) {
+      // Ensure we have a user and session before profile insertion
+      if (authData?.user) {
+        // Option A: If using a trigger, this code might not be needed.
+        // Option B: Manual insert.
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
-            { id: authData.user.id, email: email, role: mode }
+            { id: authData.user.id, email: email, role: mode, full_name: fullName }
           ]);
-        if (profileError) throw profileError;
+        
+        if (profileError) {
+          console.error("Profile insertion error details:", profileError);
+          throw profileError;
+        }
       }
       alert("Signed up successfully!");
       setLoading(false);
@@ -106,6 +119,18 @@ const Signup = () => {
           <p className="text-text-secondary text-center text-sm mb-10 font-medium">Select a role and define your access credentials</p>
 
           <form onSubmit={handleSignup} className="space-y-6">
+            <div className="form-input-container">
+              <User className="input-icon" size={18} />
+              <input 
+                type="text" 
+                placeholder="Full Name"
+                className="input-field"
+                required
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+              />
+            </div>
+
             <div className="form-input-container">
               <Mail className="input-icon" size={18} />
               <input 

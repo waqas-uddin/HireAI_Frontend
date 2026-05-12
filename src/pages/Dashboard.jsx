@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { dbService } from '../services/dbService';
 import { supabase } from '../lib/supabase';
+import { calculateFinalScore } from '../utils/scoring';
 
 const Dashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -34,8 +35,8 @@ const Dashboard = ({ user }) => {
   const loadData = async () => {
     try {
       const [jobsData, appsData] = await Promise.all([
-        dbService.getJobs(),
-        dbService.getAllApplications()
+        dbService.getJobs(user?.id),
+        dbService.getAllApplications(user?.id)
       ]);
       setJobs(jobsData);
       setApplications(appsData);
@@ -102,8 +103,10 @@ const Dashboard = ({ user }) => {
     <div className="manager-main max-w-7xl mx-auto px-6">
       <header className="flex justify-between items-end mb-10">
         <div>
-           <h1 className="text-4xl font-black tracking-tight text-white mb-2">Recruiter Dashboard</h1>
-           <p className="text-text-muted text-sm font-medium">Manage your hiring pipeline in one place.</p>
+           <h1 className="text-4xl font-black tracking-tight text-white mb-1">
+             Recruiter <span className="text-accent-primary">Dashboard.</span>
+           </h1>
+           <p className="text-text-muted text-sm font-medium">Welcome back, {user?.full_name || user?.email?.split('@')[0]}. Manage your hiring pipeline.</p>
         </div>
         <button className="btn-primary flex items-center gap-2" onClick={() => navigate('/manager/jobs/create')}>
           <Plus size={20} /> 
@@ -200,11 +203,11 @@ const Dashboard = ({ user }) => {
                     >
                         <div className="flex justify-between items-start mb-6 pb-6 border-b border-white/5">
                             <div className="flex gap-4 items-center">
-                                <div className="w-12 h-12 rounded-full bg-accent-primary flex items-center justify-center text-white font-black text-sm shadow-inner">
-                                    {app.candidate_email[0].toUpperCase()}
+                                <div className="w-12 h-12 rounded-full bg-accent-primary flex items-center justify-center text-white font-black text-sm shadow-inner uppercase">
+                                    {app.profiles?.full_name?.[0] || app.candidate_email[0].toUpperCase()}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-xl text-white mb-1 tracking-tight">{app.candidate_email}</h4>
+                                    <h4 className="font-bold text-xl text-white mb-1 tracking-tight">{app.profiles?.full_name || app.candidate_email}</h4>
                                     <div className="flex items-center gap-2 text-[10px] text-text-muted uppercase tracking-widest font-black">
                                         <Clock size={12} /> Received {new Date(app.created_at).toLocaleDateString()}
                                     </div>
@@ -212,10 +215,10 @@ const Dashboard = ({ user }) => {
                             </div>
                             <div className="text-right">
                               <span className="text-[10px] text-text-muted uppercase font-black tracking-widest block mb-1">
-                                {app.status === 'completed' ? 'Performance' : 'AI Rating'}
+                                {app.status === 'completed' ? 'Combined Performance' : 'AI Rating'}
                               </span>
-                              <div className={`text-4xl font-black tracking-tighter ${((app.status === 'completed' ? app.coding_score : app.resume_score) || 0) > 80 ? 'text-success' : 'text-warning'}`}>
-                                {app.status === 'completed' ? (app.coding_score ?? app.resume_score) : app.resume_score}%
+                              <div className={`text-4xl font-black tracking-tighter ${calculateFinalScore(app.resume_score, app.coding_score, app.verbal_score) > 70 ? 'text-success' : 'text-warning'}`}>
+                                {calculateFinalScore(app.resume_score, app.coding_score, app.verbal_score)}%
                               </div>
                             </div>
                         </div>

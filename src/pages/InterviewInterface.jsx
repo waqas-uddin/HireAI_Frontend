@@ -573,6 +573,7 @@ const InterviewInterface = () => {
           coding_score: codingEvaluation?.score || (passedCount * 2),
           coding_logic: codingEvaluation?.logic_notes || "Completed",
           coding_code: code,
+          verbal_score: verbalEvaluation?.overall_score || 0,
           reasoning: `OVERALL EVALUATION:\n${verbalEvaluation?.summary || "Interview finished."}\n\nHIRE RECOMMENDATION: ${verbalEvaluation?.hire_recommendation || 'N/A'}\n\nSCORES:\n- Technical: ${verbalEvaluation?.technical_score}/10\n- Communication: ${verbalEvaluation?.communication_score}/10\n- Confidence: ${verbalEvaluation?.confidence_score}/10`
         };
 
@@ -854,7 +855,6 @@ const InterviewInterface = () => {
             <MessageSquare size={16} color="var(--accent-primary)" />
             <h3>Live Interview</h3>
           </div>
-          <span className="chat-count-badge">{history.length}</span>
         </div>
 
         <div className="chat-messages">

@@ -69,7 +69,9 @@ const Sidebar = ({ user, userRole, onLogout }) => {
             <User size={18} />
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="text-xs font-bold truncate text-white uppercase tracking-tight">{user?.email?.split('@')[0] || 'User'}</span>
+            <span className="text-xs font-bold truncate text-white uppercase tracking-tight">
+              {user?.full_name || (user?.user_metadata?.full_name) || user?.email?.split('@')[0] || 'User'}
+            </span>
             <span className="text-[10px] text-text-muted uppercase font-black tracking-widest">{isCandidate ? 'Candidate Portal' : 'Recruiter Portal'}</span>
           </div>
         </div>

@@ -2,11 +2,16 @@ import { supabase } from '../lib/supabase';
 
 export const dbService = {
   // --- Jobs ---
-  async getJobs() {
-    const { data, error } = await supabase
+  async getJobs(recruiterId = null) {
+    let query = supabase
       .from('jobs')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
+    
+    if (recruiterId) {
+      query = query.eq('created_by', recruiterId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },
@@ -31,11 +36,16 @@ export const dbService = {
     return data;
   },
 
-  async getAllApplications() {
-    const { data, error } = await supabase
+  async getAllApplications(recruiterId = null) {
+    let query = supabase
       .from('applications')
-      .select('*, jobs(title)')
-      .order('created_at', { ascending: false });
+      .select('*, jobs!inner(title, created_by), profiles:candidate_id(full_name)');
+    
+    if (recruiterId) {
+      query = query.eq('jobs.created_by', recruiterId);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },

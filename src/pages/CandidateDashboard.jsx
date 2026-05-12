@@ -37,7 +37,9 @@ const CandidateDashboard = ({ user }) => {
   return (
     <div className="page-container">
       <header className="mb-16">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight">My <span className="text-accent-primary">Journey.</span></h1>
+        <h1 className="text-5xl font-bold mb-4 tracking-tight">
+          Welcome, <span className="text-accent-primary">{user?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}</span>.
+        </h1>
         <p className="text-text-secondary text-lg">
           Synchronizing with Active Jobs. Track your progress across the HireAI ecosystem.
         </p>

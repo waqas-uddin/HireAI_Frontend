@@ -43,14 +43,14 @@ function App() {
       // Fetch real role from DB
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, full_name')
         .eq('id', session.user.id)
         .single();
       
       if (profile && profile.role && mounted) {
-        // Source of truth dictates all routing.
+        // Force state update with new profile data
         setUserRole(profile.role);
-        setUser(session.user);
+        setUser({ ...session.user, ...profile, full_name: profile.full_name });
         localStorage.setItem('hireai_role', profile.role);
       } else if (!profile || !profile.role) {
          setUser(null);

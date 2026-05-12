@@ -36,10 +36,12 @@ const TopNav = ({ user, userRole, onLogout }) => {
         {user ? (
           <>
             <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-                <div className="w-7 h-7 rounded-full bg-accent-primary flex items-center justify-center text-white text-[10px] font-bold">
-                   {user.email?.[0].toUpperCase() || 'U'}
+                <div className="w-7 h-7 rounded-full bg-accent-primary flex items-center justify-center text-white text-[10px] font-bold uppercase">
+                   {(user.full_name || user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || 'U'}
                 </div>
-                <span className="text-xs font-medium text-text-secondary hidden sm:block">{user.email}</span>
+                <span className="text-xs font-medium text-text-secondary hidden sm:block">
+                  {user.full_name || user.user_metadata?.full_name || user.email}
+                </span>
             </div>
             <button 
               className="p-2 text-text-muted hover:text-error transition-colors bg-white/5 rounded-lg border border-white/5"

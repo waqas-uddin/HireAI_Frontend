@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { dbService } from '../services/dbService';
 import { supabase } from '../lib/supabase';
+import { calculateFinalScore } from '../utils/scoring';
 
 const CandidateReport = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [app, setApp] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,13 +26,21 @@ const CandidateReport = () => {
         setJob(currentJob);
 
         if (user) {
-          const { data: application } = await supabase
-            .from('applications')
-            .select('*')
-            .eq('job_id', jobId)
-            .eq('candidate_id', user.id)
-            .single();
-          setApp(application);
+          const [appRes, profileRes] = await Promise.all([
+            supabase
+              .from('applications')
+              .select('*')
+              .eq('job_id', jobId)
+              .eq('candidate_id', user.id)
+              .single(),
+            supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', user.id)
+              .single()
+          ]);
+          setApp(appRes.data);
+          setProfile(profileRes.data);
         }
     } catch (err) {
         console.error("Report load failed", err);
@@ -61,11 +71,7 @@ const CandidateReport = () => {
     }
   ];
 
-  const finalScore = (
-    ((app?.resume_score || 0) * 0.3) + 
-    ((app?.coding_score || 0) * 0.5) + 
-    (75 * 0.2) // Mocked behavioral score for now
-  ).toFixed(1);
+  const finalScore = calculateFinalScore(app?.resume_score, app?.coding_score, app?.verbal_score);
 
   if (loading) {
       return (
@@ -95,7 +101,8 @@ const CandidateReport = () => {
           <Award size={48} className="text-accent-primary sm:w-16 sm:h-16" />
         </motion.div>
         
-        <h1 className="text-4xl sm:text-6xl font-black mb-4 tracking-tight text-center">AI <span className="text-accent-primary">Evaluation.</span></h1>
+        <h1 className="text-4xl sm:text-6xl font-black mb-2 tracking-tight text-center">AI <span className="text-accent-primary">Evaluation.</span></h1>
+        <p className="text-text-muted text-lg mb-4 font-bold uppercase tracking-widest">{profile?.full_name || 'Candidate Report'}</p>
         <div className="flex items-center gap-4 mb-8">
            <div className="px-6 py-2 bg-accent-primary rounded-full font-black text-xl shadow-lg shadow-accent-glow">
               Final Score: {finalScore}%
