@@ -65,7 +65,7 @@ const CandidateReport = () => {
     },
     { 
       label: "Behavioral & Flow", 
-      score: 7.5, // Placeholder for behavioral
+      score: app?.verbal_score || 0, 
       color: "#10b981", 
       items: ["Clarity", "Confidence", "Tone"] 
     }

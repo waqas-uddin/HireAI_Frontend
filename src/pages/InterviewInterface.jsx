@@ -568,9 +568,12 @@ const InterviewInterface = () => {
       const verbalEvaluation = await evaluateInterview(history, cameraMetrics, cheatAttempts);
 
       if (user && jobId) {
+        // Normalize coding score from 0-10 to 0-100 for storage
+        const normalizedCodingScore = (codingEvaluation?.score || (passedCount * 2)) * 10;
+
         const updatePayload = {
           status: 'completed',
-          coding_score: codingEvaluation?.score || (passedCount * 2),
+          coding_score: normalizedCodingScore,
           coding_logic: codingEvaluation?.logic_notes || "Completed",
           coding_code: code,
           verbal_score: verbalEvaluation?.overall_score || 0,
