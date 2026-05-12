@@ -21,6 +21,7 @@ const useSpeech = () => {
   const finalRef = useRef('');
   const shouldRestartRef = useRef(false);
   const listeningRef = useRef(false);
+  const lastSpeechActivityRef = useRef(Date.now());
 
   useEffect(() => {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -37,6 +38,8 @@ const useSpeech = () => {
         const t = event.results[i][0].transcript;
         if (event.results[i].isFinal) newFinals += t + ' '; else interim += t;
       }
+      // Update last speech activity timestamp whenever we get any result
+      if (newFinals || interim) lastSpeechActivityRef.current = Date.now();
       if (newFinals) finalRef.current += newFinals;
       setDisplayTranscript(finalRef.current + interim);
     };
@@ -239,8 +242,9 @@ const InterviewInterface = () => {
   useEffect(() => {
     if (displayTranscript.trim() && listening && !isAiThinkingRef.current) {
       clearTimeout(silenceTimerRef.current);
-      // Increased to 3 seconds for better UX during slow speech
-      silenceTimerRef.current = setTimeout(() => submitAnswer(), 3000);
+      // Increased to 5 seconds to allow candidates to complete their full answers
+      // and pause naturally between thoughts without interruption
+      silenceTimerRef.current = setTimeout(() => submitAnswer(), 5000);
     }
     return () => clearTimeout(silenceTimerRef.current);
   }, [displayTranscript]);
